@@ -1,0 +1,61 @@
+@host = http://localhost:3333/api
+
+### 1. Login (funcionário)
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ricardo@appsnack.com", "senha": "123456" }
+
+###
+@token = {{login.response.body.token}}
+
+### 2. Fornecedores e cardápio
+GET {{host}}/fornecedores
+Authorization: Bearer {{token}}
+
+###
+GET {{host}}/cardapio/3?categoria=Salgados&q=cox
+Authorization: Bearer {{token}}
+
+### 3. Validar cupom
+GET {{host}}/cupons/BEMVINDO10/validar
+Authorization: Bearer {{token}}
+
+### 4. Criar pedido (cartão)
+POST {{host}}/pedidos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id_fornecedor": 3,
+  "itens": [{ "id_produto": 1, "quantidade": 2, "personalizacoes": "sem pimenta" }],
+  "metodo_pagamento": "CREDITO",
+  "token_cartao": "tok_qualquer",
+  "codigo_cupom": "BEMVINDO10"
+}
+
+### 5. Histórico
+GET {{host}}/pedidos?status=PENDENTE&page=1
+Authorization: Bearer {{token}}
+
+### 6. Login do fornecedor
+# @name loginF
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "cida@appsnack.com", "senha": "123456" }
+
+###
+@tokenF = {{loginF.response.body.token}}
+
+### 7. Atualizar status
+PATCH {{host}}/pedidos/1/status
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "status": "EM_PREPARO" }
+
+### 8. Relatório de vendas
+GET {{host}}/relatorios/vendas
+Authorization: Bearer {{tokenF}}
